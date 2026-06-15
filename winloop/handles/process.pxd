@@ -25,7 +25,8 @@ cdef class UVProcess(UVHandle):
     cdef _init(self, Loop loop, list args, dict env, cwd,
                start_new_session,
                _stdin, _stdout, _stderr, pass_fds,
-               debug_flags, preexec_fn, restore_signals)
+               debug_flags, preexec_fn, restore_signals,
+               creationflags)
 
     cdef _after_fork(self)
 
@@ -34,7 +35,8 @@ cdef class UVProcess(UVHandle):
     cdef _init_env(self, dict env)
     cdef _init_files(self, _stdin, _stdout, _stderr)
     cdef _init_options(self, list args, dict env, cwd, start_new_session,
-                       _stdin, _stdout, _stderr, bint force_fork)
+                       _stdin, _stdout, _stderr, bint force_fork,
+                       creationflags)
 
     cdef _close_after_spawn(self, int fd)
 
@@ -77,4 +79,5 @@ cdef class UVProcessTransport(UVProcess):
                                 _stdin, _stdout, _stderr, pass_fds,
                                 waiter,
                                 debug_flags,
-                                preexec_fn, restore_signals)
+                                preexec_fn, restore_signals,
+                                creationflags)

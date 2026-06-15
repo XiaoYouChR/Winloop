@@ -1,3 +1,6 @@
+DEF CREATE_NO_WINDOW = 0x08000000
+
+
 @cython.no_gc_clear
 cdef class UVProcess(UVHandle):
     """Abstract class; wrapper over uv_process_t handle."""
@@ -25,7 +28,8 @@ cdef class UVProcess(UVHandle):
     cdef _init(self, Loop loop, list args, dict env,
                cwd, start_new_session,
                _stdin, _stdout, _stderr,  # std* can be defined as macros in C
-               pass_fds, debug_flags, preexec_fn, restore_signals):
+               pass_fds, debug_flags, preexec_fn, restore_signals,
+               creationflags):
 
         global __forking
 
@@ -58,7 +62,8 @@ cdef class UVProcess(UVHandle):
 
         try:
             self._init_options(args, env, cwd, start_new_session,
-                               _stdin, _stdout, _stderr, force_fork)
+                               _stdin, _stdout, _stderr, force_fork,
+                               creationflags)
 
             restore_inheritable = set()
             if pass_fds:
@@ -254,7 +259,8 @@ cdef class UVProcess(UVHandle):
         return ret
 
     cdef _init_options(self, list args, dict env, cwd, start_new_session,
-                       _stdin, _stdout, _stderr, bint force_fork):
+                       _stdin, _stdout, _stderr, bint force_fork,
+                       creationflags):
 
         memset(&self.options, 0, sizeof(uv.uv_process_options_t))
 
@@ -264,6 +270,9 @@ cdef class UVProcess(UVHandle):
         self._init_args(args)
         self.options.file = self.uv_opt_file
         self.options.args = self.uv_opt_args
+
+        if creationflags & CREATE_NO_WINDOW:
+            self.options.flags |= uv.UV_PROCESS_WINDOWS_HIDE_CONSOLE
 
         if start_new_session:
             self.options.flags |= uv.UV_PROCESS_DETACHED
@@ -644,7 +653,8 @@ cdef class UVProcessTransport(UVProcess):
                                 waiter,
                                 debug_flags,
                                 preexec_fn,
-                                restore_signals):
+                                restore_signals,
+                                creationflags):
 
         cdef UVProcessTransport handle
         handle = UVProcessTransport.__new__(UVProcessTransport)
@@ -656,7 +666,8 @@ cdef class UVProcessTransport(UVProcess):
                      pass_fds,
                      debug_flags,
                      preexec_fn,
-                     restore_signals)
+                     restore_signals,
+                     creationflags)
 
         if handle._init_futs:
             handle._stdio_ready = 0

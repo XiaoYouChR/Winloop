@@ -2782,8 +2782,6 @@ cdef class Loop:
             raise ValueError("bufsize must be 0")
         if startupinfo is not None:
             raise ValueError('startupinfo is not supported')
-        if creationflags != 0:
-            raise ValueError('creationflags is not supported')
 
         if executable is not None:
             args[0] = executable
@@ -2803,7 +2801,8 @@ cdef class Loop:
                                       waiter,
                                       debug_flags,
                                       preexec_fn,
-                                      restore_signals)
+                                      restore_signals,
+                                      creationflags)
 
         try:
             await waiter
